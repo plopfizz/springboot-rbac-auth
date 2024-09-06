@@ -1,19 +1,25 @@
 package com.authentication.authapi.services;
-
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
+import java.security.SignatureException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import static javax.crypto.Cipher.SECRET_KEY;
 
 @Service
 public class JwtService {
@@ -33,10 +39,15 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        return generateToken(userDetails, userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, List<String> roles) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("roles", roles); // Add roles to claims
+
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
@@ -57,6 +68,10 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("roles", List.class);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -84,5 +99,14 @@ public class JwtService {
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

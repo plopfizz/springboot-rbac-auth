@@ -2,11 +2,13 @@
 package com.authentication.authapi.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
+@Getter
 @Table(name = "roles")
 @Entity
 public class Role {
@@ -15,7 +17,7 @@ public class Role {
     @Column(nullable = false)
     private Integer id;
 
-    @Column(unique = true, nullable = false)
+    @Column( nullable = false)
     @Enumerated(EnumType.STRING)
     private RoleEnum name;
 
@@ -30,21 +32,9 @@ public class Role {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public RoleEnum getName() {
-        return name;
-    }
-
     public Role setName(RoleEnum name) {
         this.name = name;
         return this;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public Role setDescription(String description) {
@@ -52,17 +42,9 @@ public class Role {
         return this;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
     public Role setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
         return this;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
     }
 
     public Role setUpdatedAt(Date updatedAt) {

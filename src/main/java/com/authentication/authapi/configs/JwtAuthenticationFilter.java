@@ -26,9 +26,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     public JwtAuthenticationFilter(
-        JwtService jwtService,
-        UserDetailsService userDetailsService,
-        HandlerExceptionResolver handlerExceptionResolver
+            JwtService jwtService,
+            UserDetailsService userDetailsService,
+            HandlerExceptionResolver handlerExceptionResolver
     ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
@@ -37,9 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-        @NonNull HttpServletRequest request,
-        @NonNull HttpServletResponse response,
-        @NonNull FilterChain filterChain
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 

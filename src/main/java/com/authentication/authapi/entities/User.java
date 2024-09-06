@@ -2,6 +2,7 @@
 package com.authentication.authapi.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+@Getter
 @Table(name = "users")
 @Entity
 public class User implements UserDetails {
@@ -37,7 +39,7 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
     private Role role;
 
@@ -46,10 +48,6 @@ public class User implements UserDetails {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.getName().toString());
 
         return List.of(authority);
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     @Override
@@ -77,26 +75,14 @@ public class User implements UserDetails {
         return true;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
     public User setId(Integer id) {
         this.id = id;
         return this;
     }
 
-    public String getFullName() {
-        return fullName;
-    }
-
     public User setFullName(String fullName) {
         this.fullName = fullName;
         return this;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public User setEmail(String email) {
@@ -109,26 +95,14 @@ public class User implements UserDetails {
         return this;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
     public User setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
         return this;
     }
 
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
     public User setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
         return this;
-    }
-
-    public Role getRole() {
-        return role;
     }
 
     public User setRole(Role role) {
