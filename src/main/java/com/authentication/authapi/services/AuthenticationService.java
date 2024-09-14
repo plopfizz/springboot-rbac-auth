@@ -7,6 +7,10 @@ import com.authentication.authapi.entities.RoleEnum;
 import com.authentication.authapi.entities.User;
 import com.authentication.authapi.repositories.RoleRepository;
 import com.authentication.authapi.repositories.UserRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +26,8 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
     public AuthenticationService(
         UserRepository userRepository,
         RoleRepository roleRepository,
@@ -36,6 +41,9 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterUserDto input) {
+        if (userRepository.findByEmail(input.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already registered");
+        }
         Optional<Role> optionalRole = roleRepository.findByName(RoleEnum.USER);
 
         if (optionalRole.isEmpty()) {
@@ -48,7 +56,13 @@ public class AuthenticationService {
             .setPassword(passwordEncoder.encode(input.getPassword()))
             .setRole(optionalRole.get());
 
-        return userRepository.save(user);
+
+        User newRegisteredUser =  userRepository.save(user);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.valueToTree(newRegisteredUser);
+        kafkaTemplate.send("signUp_Update_toUser", jsonNode);
+
+        return newRegisteredUser;
     }
 
     public User authenticate(LoginUserDto input) {
